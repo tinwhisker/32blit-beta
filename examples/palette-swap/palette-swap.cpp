@@ -7,10 +7,6 @@ using namespace blit;
 
 size boar_ship_size(boar_ship[10], boar_ship[12]);
 
-/*uint8_t __ss[64 * 64];
-surface ss((uint8_t *)__ss, boar_ship_size, pixel_format::P);
-spritesheet ss_boar_ship(ss, 8, 8);*/
-
 rgba alternate_palettes[NUM_PALETTES][5] = {
     {
         rgba(87, 37, 59),

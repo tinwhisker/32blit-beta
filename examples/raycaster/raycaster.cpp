@@ -11,7 +11,7 @@ using namespace blit;
 const uint16_t screen_width = 160;
 const uint16_t screen_height = 120;
 
-#ifndef _WIN32
+#ifdef __32BLIT_STM32__
 uint8_t __ss[160 * 160] __attribute__((section(".ss")));
 uint8_t __m[160 * 120] __attribute__((section(".m")));
 #else

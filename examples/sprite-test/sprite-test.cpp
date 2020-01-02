@@ -10,10 +10,17 @@ using namespace blit;
 const uint16_t screen_width = 320;
 const uint16_t screen_height = 240;
 
+#ifdef __32BLIT_STM32__
 /* define storage for the framebuffer, spritesheet, and mask */
 //rgb     __fb[screen_width * screen_height] __attribute__((section(".fb")));
 uint8_t __m[screen_width * screen_height] __attribute__((section(".m")));
 uint8_t __pb[screen_width * screen_height] __attribute__((section(".fb")));
+#else
+/* define storage for the framebuffer, spritesheet, and mask */
+//rgb     __fb[screen_width * screen_height];
+uint8_t __m[screen_width * screen_height];
+uint8_t __pb[screen_width * screen_height];
+#endif
 
 /* create surfaces */
 //surface fb((uint8_t *)__fb, size(screen_width, screen_height), pixel_format::RGB);
