@@ -48,11 +48,6 @@ void render(uint32_t time_ms) {
     fb.pixel(point(blit::audio::channels[j].pulse_width >> 8, (j * 2) + 10));
   }
 
-  if(blit::audio::lock) {
-    fb.pen(rgba(255, 0, 0));
-    fb.rectangle(rect(0, 40, 10, 10));
-  }
-
   fb.pen(rgba(255, 255, 255, 255));
   fb.text(std::to_string(time_ms), &minimal_font[0][0], point(0, 10));
 
@@ -72,10 +67,6 @@ uint32_t s_to_vol[] = {0,4369,8738,13107,17476,21845,26214,30583,34952,39321,436
 void update(uint32_t time_ms) {
   static uint32_t last_time_ms = time_ms;
   static uint16_t tick = 0;
-
-  while(blit::audio::lock) {};
-
-  blit::audio::lock = true;
 
   tick++;
   uint16_t row = (tick >> 1) % (sizeof(song) / 25);
@@ -144,7 +135,5 @@ void update(uint32_t time_ms) {
   blit::audio::channels[0].gate       = sin(time_ms * 2 * M_PI / 5000) > 0;
 */
 
-
-  blit::audio::lock = false;
   last_time_ms = time_ms;
 }
