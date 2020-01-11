@@ -453,6 +453,34 @@ uint16_t collide_player_ud(uint16_t tile, uint8_t x, uint8_t y, void *args) {
 
 
 void update(uint32_t time_ms) {
+    //blit::audio::volume = 8000;
+    blit::audio::channels[1].frequency   = 0;
+    blit::audio::channels[1].voices      = blit::audio::audio_voice::SQUARE;
+    blit::audio::channels[1].attack_ms   = 30;
+    blit::audio::channels[1].decay_ms    = 1;
+    blit::audio::channels[1].sustain     = 0xffff;
+    blit::audio::channels[1].release_ms  = 30;
+    blit::audio::channels[1].gate        = 0;
+    
+    blit::audio::channels[1].volume      = 8000;
+    blit::audio::channels[1].pulse_width = 0x7fff;
+
+
+    blit::audio::channels[0].frequency   = 4200;
+    blit::audio::channels[0].voices      = blit::audio::audio_voice::NOISE;
+    blit::audio::channels[0].gate        = 1;
+
+    blit::audio::channels[0].attack_ms   = 1;
+    blit::audio::channels[0].decay_ms    = 1;
+    blit::audio::channels[0].sustain     = 0xffff;
+    blit::audio::channels[0].release_ms  = 1;
+
+    uint32_t water_dist = player_position.y - (SCREEN_H - water_level);
+    if (water_dist < 0) {
+        water_dist = 0;
+    }
+    blit::audio::channels[0].volume      = 8000 + (sin(float(time_ms) / 1000.0f) * 3000);
+
     uint16_t changed = blit::buttons ^ last_buttons;
     uint16_t pressed = changed & blit::buttons;
     uint16_t released = changed & ~blit::buttons;
@@ -541,6 +569,13 @@ void update(uint32_t time_ms) {
         player_status = PLAYER_DEAD;
     }
     for_each_tile(collide_player_ud, (void *)&tile_offset);
+
+    if(player_velocity.y < 0) {
+        blit::audio::channels[1].gate        = 1;
+        blit::audio::channels[1].frequency = -(player_velocity.y * 300);
+    } else {
+        blit::audio::channels[1].gate        = 0;
+    }
 
     last_buttons = blit::buttons;
 }
