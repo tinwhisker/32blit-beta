@@ -23,24 +23,34 @@ namespace blit {
       for(auto &channel : channels) {
         // check if any voices are active for this channel
         if(channel.voices) {
-          int32_t channel_sample = 0xffff;
+          uint32_t channel_sample = 0xffff;
+          bool overflow = false;
 
           // gate bit has changed, reset note timer
           if((channel.flags & 0b1) != (channel.gate & 0b1)) {
             channel.time_ms = 0;
+            if(channel.gate) {
+              channel.phase = adsr_phase::ATTACK;
+            } else {
+              channel.phase = adsr_phase::RELEASE;
+            }
           }
 
           // increment the voice position counter. this provides an 
           // Q8 fixed point value representing how far through 
           // the current voice pattern we are
           channel.voice_offset += ((channel.frequency * 256) << 8) / sample_rate;
+
+          if(channel.voice_offset & 0xffff0000) {
+            overflow = true;
+            channel.voice_offset &= 0xffff;
+          }
           
           if(channel.voices & audio_voice::NOISE) {
-            if(channel.voice_offset & 0xffff0000) {
               // if the voice offset overflows then generate a new random
               // noise sample
+            if(overflow) {
               channel.noise = blit::random() & 0xffff;
-              channel.voice_offset &= 0xffff;
             }
 
             channel_sample &= channel.noise;
@@ -51,11 +61,11 @@ namespace blit {
           }
 
           if(channel.voices & audio_voice::TRIANGLE) {          
-            channel_sample &= channel.voice_offset < 0x7fff ? channel.voice_offset << 1 : 0xffff - (channel.voice_offset << 1);
+            channel_sample &= channel.voice_offset < 0x7fff ? channel.voice_offset: 0xffff - channel.voice_offset;
           }
 
           if(channel.voices & audio_voice::SQUARE) {
-            channel_sample &= (((channel.voice_offset >> 8) & 0xff) < channel.pulse_width) ? 0xffff : 0;
+            channel_sample &= (channel.voice_offset < channel.pulse_width) ? 0xffff : 0;
           }
 
           if(channel.voices & audio_voice::SINE) {
@@ -64,38 +74,51 @@ namespace blit {
             // the voice position to index into it
             channel_sample &= sine_voice[(channel.voice_offset >> 8) & 0xff];
           }
+          uint32_t sustain_level = (channel.volume * channel.sustain) / 0xffff;
 
-          channel_sample -= 0x7fff;
+          uint32_t attack_per_frame = (channel.volume * frame_ms) / channel.attack_ms;
+          uint32_t decay_per_frame = ((channel.volume - sustain_level) * frame_ms) / channel.decay_ms;
+          uint32_t release_per_frame = (sustain_level * frame_ms) / channel.release_ms;
 
-          uint16_t adsr = 0;
-          
-          if(channel.gate) {
-            if((channel.time_ms >> 16) < channel.attack_ms) {
-              // attack phase
-              adsr = channel.time_ms / channel.attack_ms; // (Q16)
-            } else if((channel.time_ms >> 16) < (channel.attack_ms + channel.decay_ms)) {
-              // decay phase
-              uint32_t decay = (channel.time_ms - (channel.attack_ms << 16)) / channel.decay_ms;
-              adsr = 0xffff - (((0xffff - channel.sustain) * decay) >> 16);
-            } else {
-              // sustain phase
-              adsr = channel.sustain;
-            }  
-          }else{
-            if((channel.time_ms >> 16) < channel.release_ms) {
-              // release phase
-              uint32_t release = channel.time_ms / channel.release_ms;
-              adsr = channel.sustain - ((channel.sustain * release) >> 16);
-            }
-          }      
 
-          channel_sample = (channel_sample * adsr) >> 16;
+          switch(channel.phase) {
+            case adsr_phase::ATTACK:
+              channel.adsr += attack_per_frame;
+              if(channel.adsr > (channel.volume << 16)){
+                channel.adsr = channel.volume << 16;
+              }
+              if((channel.time_ms >> 16) > channel.attack_ms){
+                channel.phase = adsr_phase::DECAY;
+              }
+              break;
+            case adsr_phase::DECAY:
+              channel.adsr -= decay_per_frame;
+              if(channel.adsr < (sustain_level << 16)){
+                channel.adsr = sustain_level << 16;
+              }
+              if((channel.time_ms >> 16) > (channel.attack_ms + channel.decay_ms)){
+                channel.phase = adsr_phase::SUSTAIN;
+              }
+              break;
+            case adsr_phase::SUSTAIN:
+              channel.adsr = sustain_level << 16;
+              break;
+            case adsr_phase::RELEASE:
+              if(channel.adsr > release_per_frame){
+                channel.adsr -= release_per_frame;
+              }
+              else {
+                channel.adsr = 0;
+              }
+              break;
+          }
 
-          // apply channel volume
-          channel_sample = (channel_sample * channel.volume) >> 16;
+          int64_t channel_sample_int = channel_sample - 0x7fff;
+          channel_sample_int *= (channel.adsr >> 17);
+          channel_sample_int /= 0xffff;
 
           // combine channel sample into the final sample
-          sample += channel_sample;     
+          sample += channel_sample_int;
 
           channel.time_ms += frame_ms;          
         }
