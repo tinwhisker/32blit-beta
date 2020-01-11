@@ -335,3 +335,5 @@ ASALocalRun/
 # Object files and other build cruft
 *.o
 lib32blit.a
+.vscode/settings.json
+.vscode/settings.json

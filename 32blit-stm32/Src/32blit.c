@@ -120,7 +120,7 @@ void blit_tick() {
 
   if(blit::tick(blit::now())){
 
-    fb.text(std::to_string(audio_tick_cycle_count), &minimal_font[0][0], point(0, 20));
+//    fb.text(std::to_string(audio_tick_cycle_count), &minimal_font[0][0], point(0, 20));
     blit_flip();
   }
 }
@@ -387,6 +387,10 @@ void blit_flip() {
     } else {
         // LORES mode
 
+        // wait for next frame if LTDC hardware currently drawing, ensures
+        // no tearing
+        while (!(LTDC->CDSR & LTDC_CDSR_VSYNCS));
+        
         // pixel double the framebuffer to the LTDC buffer
         rgb *src = (rgb *)blit::fb.data;
 
@@ -409,10 +413,6 @@ void blit_flip() {
         }
 
         SCB_CleanInvalidateDCache_by_Addr((uint32_t *)&__ltdc_start, 320 * 240 * 2);
-
-        // wait for next frame if LTDC hardware currently drawing, ensures
-        // no tearing
-        while (!(LTDC->CDSR & LTDC_CDSR_VSYNCS));
 
         // set the LTDC layer framebuffer pointer shadow register
         LTDC_Layer1->CFBAR = (uint32_t)(&__ltdc_start);
