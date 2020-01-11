@@ -4,6 +4,7 @@ add_library(BlitHalSDL STATIC
 	Input.cpp
 	Main.cpp
 	Renderer.cpp
+	Audio.cpp
 	System.cpp
 )
 

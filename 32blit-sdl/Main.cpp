@@ -8,6 +8,7 @@
 #include "Input.hpp"
 #include "System.hpp"
 #include "Renderer.hpp"
+#include "Audio.hpp"
 
 #ifdef VIDEO_CAPTURE
 #include "VideoCapture.hpp"
@@ -25,7 +26,7 @@ int main(int argc, char *argv[]) {
 
 	std::cout << "Hello World" << std::endl;
 
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER|SDL_INIT_AUDIO) < 0) {
 		fprintf(stderr, "could not initialize SDL2: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -51,6 +52,7 @@ int main(int argc, char *argv[]) {
 	System *sys = new System();
 	Input *inp = new Input(window, sys);
 	Renderer *ren = new Renderer(window, System::width, System::height);
+	Audio *blit_audio = new Audio();
 
 #ifdef VIDEO_CAPTURE
 	VideoCapture *cap = new VideoCapture(argv[0]);
