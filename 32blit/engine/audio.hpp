@@ -66,11 +66,11 @@ namespace blit {
     struct audio_channel {
         uint8_t   voices        = 0;      // bitmask for enabled voices (see audio_voice enum for values)
         uint16_t  frequency     = 660;    // frequency of the voice (Hz)
-        uint32_t  time_ms       = 0;      // play time of current note in milliseconds used for ADSR calculations (Q16)
+        uint32_t  frames        = 0;      // play time of current note in frames used for ADSR calculations (Q16)
         uint16_t  volume        = 0xffff; // channel volume (default 50%)
         uint32_t  adsr          = 0;
 
-        uint8_t phase           = adsr_phase::ATTACK;
+        uint8_t   phase         = adsr_phase::ATTACK;
 
         uint16_t  attack_ms     = 2;      // attack period
         uint16_t  decay_ms      = 6;      // decay period
