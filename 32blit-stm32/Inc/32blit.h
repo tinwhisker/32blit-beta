@@ -2,7 +2,7 @@
 #include "32blit.hpp"
 #include "fatfs.h"
 
-#define DAC_BUFFER_SIZE 4000
+#define DAC_BUFFER_SIZE 128 //882
 #define DAC_DMA_COMPLETE 2
 #define DAC_DMA_HALF_COMPLETE 1
 

@@ -65,15 +65,29 @@ void blit_debug(std::string message) {
     fb.text(message, &minimal_font[0][0], point(0, 0));
 }
 
-/*void HAL_DACEx_ConvHalfCpltCallbackCh2(DAC_HandleTypeDef *hdac){
+inline void blit_update_dac() {
+    uint16_t buffer_offset = 0;
+    if(dma_status == DAC_DMA_COMPLETE){
+      buffer_offset = (DAC_BUFFER_SIZE / 2);
+    }
+    dma_status = 0;
+    for(auto x = 0; x < DAC_BUFFER_SIZE / 2; x++){
+      dac_buffer[buffer_offset + x] = blit::audio::get_audio_frame() >> 4;
+    }
+}
+
+void HAL_DACEx_ConvHalfCpltCallbackCh2(DAC_HandleTypeDef *hdac){
   dma_status = DAC_DMA_HALF_COMPLETE;
+  blit_update_dac();
 }
 
 void HAL_DACEx_ConvCpltCallbackCh2(DAC_HandleTypeDef *hdac){
   dma_status = DAC_DMA_COMPLETE;
-}*/
+  blit_update_dac();
+}
 
 
+/*
 uint32_t audio_tick_cycle_count = 0;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   if(htim->Instance == TIM6) {    
@@ -83,9 +97,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
 
   }
-}
-
-
+}*/
 
 /*
 uint32_t blit_update_dac(FIL *audio_file) {
@@ -117,7 +129,8 @@ uint32_t blit_update_dac(FIL *audio_file) {
   }
 
   return read;
-}*/
+}
+*/
 
 void blit_tick() {
   blit_process_input();
@@ -125,6 +138,10 @@ void blit_tick() {
   blit_update_vibration();
 
  // HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_14);
+
+  /*if(dma_status) {
+    blit_update_dac();
+  }*/
 
   if(blit::tick(blit::now())){
 
@@ -177,9 +194,9 @@ void blit_init() {
     for(int x = 0; x<DAC_BUFFER_SIZE; x++){
       dac_buffer[x] = 0;
     }
-    HAL_TIM_Base_Start_IT(&htim6);
+    HAL_TIM_Base_Start(&htim6);
     HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
-    //HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_2, (uint32_t*)dac_buffer, DAC_BUFFER_SIZE, DAC_ALIGN_12B_R);
+    HAL_DAC_Start_DMA(&hdac1, DAC_CHANNEL_2, (uint32_t*)dac_buffer, DAC_BUFFER_SIZE, DAC_ALIGN_12B_R);
     
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;

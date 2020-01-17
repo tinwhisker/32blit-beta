@@ -55,7 +55,7 @@ namespace blit {
           if(channel.voices & audio_voice::NOISE) {
               // if the voice offset overflows then generate a new random
               // noise sample
-            if(overflow) {
+            if(channel.voice_offset & 0x8000) {
               channel.noise = blit::random() & 0xffff;
             }
 

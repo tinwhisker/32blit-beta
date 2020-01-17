@@ -126,8 +126,8 @@ void MX_TIM4_Init(void)
 /* TIM6 init function */
 void MX_TIM6_Init(void)
 {
-  HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
-  __TIM6_CLK_ENABLE();
+  //HAL_NVIC_EnableIRQ(TIM6_DAC_IRQn);
+  //__TIM6_CLK_ENABLE();
 
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
@@ -136,6 +136,12 @@ void MX_TIM6_Init(void)
   htim6.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim6.Init.Period = 85;
   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
