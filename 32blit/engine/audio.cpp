@@ -31,7 +31,7 @@ namespace blit {
         if(channel.voice_offset & 0xfffff000) {
           // if the voice offset overflows then generate a new random
           // noise sample
-          channel.noise = (rand() & 0xffff) - (0xffff >> 1); 
+          channel.noise = (random() & 0xffff) - (0xffff >> 1); 
         }
 
         channel.voice_offset &= 0xffff;

@@ -139,10 +139,7 @@ void blit_global_volume(uint32_t v) {
   global_volume = v;
 }
 
-void blit_init() {
-    HAL_TIM_Base_Start_IT(&htim6);
-    HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
-    
+void blit_init() {   
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
     DWT->CYCCNT = 0;
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
@@ -169,6 +166,9 @@ void blit_init() {
     blit::open_file = ::open_file;
     blit::read_file = ::read_file;
     blit::close_file = ::close_file;
+
+    HAL_TIM_Base_Start_IT(&htim6);
+    HAL_DAC_Start(&hdac1, DAC_CHANNEL_2);
 
     blit_enable_amp();
 

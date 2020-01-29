@@ -9,7 +9,7 @@ namespace blit {
   void (*init)()                                    = nullptr;
   void (*update)(uint32_t time)                     = nullptr;
   void (*render)(uint32_t time)                     = nullptr;
-  void (*set_screen_mode)(screen_mode new_mode)     = nullptr;
+  void (*set_screen_mode)(screen_mode new_mode)     = nullptr;  
   uint32_t (*now)()                                 = nullptr;
   uint32_t (*random)()                              = nullptr;
   void (*debug)(std::string message)                = nullptr;
