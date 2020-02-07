@@ -15,6 +15,7 @@ namespace blit {
   void (*debug)(std::string message)                = nullptr;
   int  (*debugf)(const char * psFormatString, ...) 	= nullptr;
   void (*switch_execution)()												= nullptr;
+  bool (*sd_detected)()                               = nullptr;
 
   int32_t (*open_file)(std::string file)          = nullptr;
   int32_t (*read_file)(uint32_t fh, uint32_t offset, uint32_t length, char* buffer) = nullptr;

@@ -37,6 +37,17 @@ void MX_FATFS_Init(void)
   /* USER CODE END Init */
 }
 
+void MX_FATFS_DeInit(void) 
+{
+  /*## FatFS: Un-Link the USER driver ###########################*/
+  retUSER = FATFS_UnLinkDriver(USERPath);
+}
+
+uint8_t getDriveCount(void)
+{
+  return FATFS_GetAttachedDriversNbr();
+}
+
 /**
   * @brief  Gets Time from RTC 
   * @param  None

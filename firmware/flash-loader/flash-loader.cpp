@@ -12,7 +12,7 @@ extern QSPI_HandleTypeDef hqspi;
 extern CDCCommandStream g_commandStream;
 
 FlashLoader flashLoader;
-
+bool sd_Inserted = false;
 
 // c calls to c++ object
 void init()
@@ -151,10 +151,32 @@ bool FlashLoader::Flash(const char *pszFilename)
 	return bResult;
 }
 
-
 // Render() Call relevant render based on state
 void FlashLoader::Render(uint32_t time)
 {
+	if (blit::sd_detected() != sd_Inserted) // Here or Update?
+	{ 
+		static uint32_t last_sd_time = 0;
+
+		//SD removed, so just bail out.
+		if (blit::sd_detected() == false)
+		{
+			sd_Inserted = false;
+			MX_FATFS_DeInit();
+		}
+		else
+		{
+			//SD inserted, so give it time to init.
+			if (last_sd_time == 0) last_sd_time = time;
+			if (time - last_sd_time > 199)
+			{
+				MX_FATFS_Init();
+				last_sd_time = 0;
+				sd_Inserted = true;
+			}
+		}
+	}
+
 	switch(m_state)
 	{
 		case stFlashFile:
@@ -163,17 +185,30 @@ void FlashLoader::Render(uint32_t time)
 			break;
 
 		case stSaveFile:
-			RenderSaveFile(time);
+			if (sd_Inserted) RenderSaveFile(time);
 			break;
 
 		case stFlashCDC:
-			RenderFlashCDC(time);
+			if (sd_Inserted) RenderFlashCDC(time);
 			break;
 
 		case stSwitch:
 			blit::switch_execution();
 		break;
 	}
+
+	SDStuff(time);
+}
+
+void FlashLoader::SDStuff(uint32_t time)
+{
+	screen.pen(RGBA(255, 255, 255));
+	char buffer[128];
+	sprintf(buffer, "SD Last State %.2u%", (uint16_t)retUSER);
+	screen.text(buffer, &minimal_font[0][0], ROW(12));
+	char biffer[128];
+	sprintf(biffer, "SD Count %.u%%", (uint8_t)FATFS_GetAttachedDriversNbr());
+	screen.text(biffer, &minimal_font[0][0], ROW(22));
 }
 
 // RenderSaveFile() Render file save progress %
@@ -207,7 +242,14 @@ void FlashLoader::RenderFlashFile(uint32_t time)
 
 	static uint32_t lastButtons = 0;
 
-	if(!m_bFsInit)
+	if(m_bFsInit && !sd_Inserted) { //Reset menu
+		m_bFsInit = false;
+		m_uFileCount = 0;
+		m_uCurrentFile = 0;
+		m_state = stFlashFile;
+	}
+
+	if(!m_bFsInit && sd_Inserted)
 		FSInit();
 
 	uint32_t changedButtons = buttons ^ lastButtons;
@@ -235,7 +277,8 @@ void FlashLoader::RenderFlashFile(uint32_t time)
 	}
 	else
 	{
-		screen.text("No Files Found.", &minimal_font[0][0], ROW(0));
+		if (!sd_Inserted) screen.text("No SD Found.", &minimal_font[0][0], ROW(0));
+		if (sd_Inserted) screen.text("No Files Found.", &minimal_font[0][0], ROW(0));
 	}
 
 	if(button_up)
@@ -252,11 +295,15 @@ void FlashLoader::RenderFlashFile(uint32_t time)
 		}
 	}
 
-	if(button_a)
+	if(button_a && m_uFileCount)
 	{
 		if(Flash(m_filenames[m_uCurrentFile])) {
 			blit::switch_execution();
 		}
+	}
+	if(button_a && !m_uFileCount)
+	{
+		m_bFsInit = false;
 	}
 }
 

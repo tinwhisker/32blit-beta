@@ -37,6 +37,8 @@ extern FATFS USERFatFS; /* File system object for USER logical drive */
 extern FIL USERFile; /* File object for USER */
 
 void MX_FATFS_Init(void);
+void MX_FATFS_DeInit(void);
+uint8_t getDriveCount(void);
 
 /* USER CODE BEGIN Prototypes */
 

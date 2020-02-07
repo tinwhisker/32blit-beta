@@ -130,7 +130,7 @@ int32_t close_file(uint32_t fh) {
 }
 
 bool blit_sd_detected() {
-  return HAL_GPIO_ReadPin(GPIOD, GPIO_PIN_11) == 1;
+  return HAL_GPIO_ReadPin(SD_DETECT_GPIO_Port, SD_DETECT_Pin) == 1;
 }
 
 void blit_enable_amp() {
@@ -186,6 +186,8 @@ void blit_init() {
     blit::close_file = ::close_file;
 
     blit::switch_execution = blit_switch_execution;
+
+    blit::sd_detected = blit_sd_detected;
 
     blit_enable_amp();
 

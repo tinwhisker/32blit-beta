@@ -26,6 +26,7 @@ namespace blit {
   extern int32_t  (*close_file)       (uint32_t fh);
   extern void     (*reset)            ();
   extern void			(*switch_execution) ();
+  extern bool     (*sd_detected)        ();
 
   bool tick(uint32_t time);
   void fast_tick(uint32_t time);
