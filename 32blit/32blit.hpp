@@ -5,6 +5,7 @@
 #include "engine/file.hpp"
 #include "engine/output.hpp"
 #include "engine/input.hpp"
+#include "engine/useri2c.hpp"
 #include "audio/audio.hpp"
 #include "engine/timer.hpp"
 #include "engine/tweening.hpp"

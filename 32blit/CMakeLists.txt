@@ -11,6 +11,7 @@ set(SOURCES
 	engine/timer.cpp
 	engine/tweening.cpp
 	engine/version.cpp
+	engine/useri2c.cpp
 	graphics/blend.cpp
 	graphics/color.cpp
 	graphics/filter.cpp

@@ -19,6 +19,7 @@
 #include "i2c.h"
 #include "i2c-msa301.h"
 #include "i2c-bq24295.h"
+#include "i2c-user.h"
 #include "fatfs.h"
 #include "quadspi.h"
 #include "usbd_core.h"
@@ -26,6 +27,7 @@
 #include "32blit.hpp"
 #include "engine/api_private.hpp"
 #include "graphics/color.hpp"
+#include "engine/useri2c.hpp"
 #include "engine/running_average.hpp"
 
 #include "stdarg.h"
@@ -328,6 +330,7 @@ void blit_init() {
     blit::api.decode_jpeg_buffer = blit_decode_jpeg_buffer;
     blit::api.decode_jpeg_file = blit_decode_jpeg_file;
 
+    user_i2c_handle = &hi2c4;
 
   display::init();
   
