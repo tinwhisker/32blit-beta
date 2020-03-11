@@ -73,6 +73,7 @@ list(APPEND SOURCES
 	Src/i2c.c
 	Src/i2c-msa301.c
 	Src/i2c-bq24295.c
+	Src/i2c-user.c
 	Src/quadspi.c
 	Src/spi.c
 	Src/spi-st7272a.c

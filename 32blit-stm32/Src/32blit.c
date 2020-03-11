@@ -331,6 +331,8 @@ void blit_init() {
     blit::api.decode_jpeg_file = blit_decode_jpeg_file;
 
     user_i2c_handle = &hi2c4;
+    blit::i2c_send = i2c_sender;
+    blit::i2c_receive = i2c_receiver;
 
   display::init();
   
